@@ -91,6 +91,32 @@ def results_to_csv(results, csv_path):
             writer.writerow([filename, cer, wer, wer_bow])
 
 
+# needed for evaluate_dir
+def evaluate_from_ref(ref, f_path):
+    with open(f_path, "r", encoding="utf-8") as f:
+        hyp = f.read()
+
+    res = evaluate_cer_wer(ref, hyp)
+    return res
+
+
+# this evaluates a directory of txt files against a reference
+def evaluate_dir(ref: str, hyp_dir_path: str):
+    hyp_l = []
+    for f in os.listdir(hyp_dir_path):
+        if f.endswith(".txt"):
+            full_path = os.path.join(hyp_dir_path, f)
+            hyp_l.append(full_path)
+
+    res_l = []
+    for f in hyp_l:
+        res = evaluate_from_ref(ref, f)
+        print(f"{f}: {res}")
+        res_l.append((f, res))
+
+    return res_l
+
+
 if __name__ == "__main__":
     results = process_eval_dirs()
     results_to_csv(results, "pearson_scripting_results.csv")
