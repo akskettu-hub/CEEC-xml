@@ -2,6 +2,7 @@ import os
 import csv
 from jiwer import wer, cer
 from collections import Counter
+from datetime import datetime
 
 
 def bow_wer(ref: str, hyp: str) -> float:
@@ -82,15 +83,6 @@ def process_eval_dirs():
     return results
 
 
-def results_to_csv(results, csv_path):
-    with open(csv_path, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["filename", "CER", "WER", "WER-BOW"])
-
-        for filename, (cer, wer, wer_bow) in results:
-            writer.writerow([filename, cer, wer, wer_bow])
-
-
 # needed for evaluate_dir
 def evaluate_from_ref(ref, f_path):
     with open(f_path, "r", encoding="utf-8") as f:
@@ -101,7 +93,7 @@ def evaluate_from_ref(ref, f_path):
 
 
 # this evaluates a directory of txt files against a reference
-def evaluate_dir(ref: str, hyp_dir_path: str):
+def evaluate_dir(ref: str, hyp_dir_path: str, write_to_csv=False):
     hyp_l = []
     for f in os.listdir(hyp_dir_path):
         if f.endswith(".txt"):
@@ -114,7 +106,49 @@ def evaluate_dir(ref: str, hyp_dir_path: str):
         print(f"{f}: {res}")
         res_l.append((f, res))
 
+    if write_to_csv:
+        res_dir = create_results_folder()
+
+        new_csv = create_results_csv_name(res_dir)
+        results_to_csv(csv_path=new_csv, results=res_l)
+
     return res_l
+
+
+def create_results_folder():
+    base_dir = "results"
+    os.makedirs(base_dir, exist_ok=True)
+    date = datetime.now().strftime("%Y%m%d")
+
+    folder_name = f"results_{date}"
+    folder_path = os.path.join(base_dir, folder_name)
+
+    os.makedirs(folder_path, exist_ok=True)
+
+    return folder_path
+
+
+def create_results_csv_name(res_dir_path: str):
+    date = datetime.now().strftime("%Y%m%d")
+    exsisting_files = [
+        filename for filename in os.listdir(res_dir_path) if filename.endswith(".csv")
+    ]
+
+    next_index = len(exsisting_files)
+
+    file_name = f"results_{date}_{next_index:02d}.csv"
+    file_path = os.path.join(res_dir_path, file_name)
+
+    return file_path
+
+
+def results_to_csv(results, csv_path):
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["filename", "CER", "WER", "WER-BOW"])
+
+        for filename, (cer, wer, wer_bow) in results:
+            writer.writerow([filename, cer, wer, wer_bow])
 
 
 if __name__ == "__main__":
