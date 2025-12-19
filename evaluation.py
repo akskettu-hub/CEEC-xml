@@ -29,60 +29,6 @@ def evaluate_cer_wer(ref: str, hyp: str) -> tuple[float, float, float]:
     return (cer_error_rate, wer_error_rate, wer_bow_error_rate)
 
 
-def evaluation_from_files(ref_path: str, hyp_path: str):
-    with open(ref_path, "r", encoding="utf-8") as f:
-        ref = f.read()
-
-    with open(hyp_path, "r", encoding="utf-8") as f:
-        hyp = f.read()
-
-    res = evaluate_cer_wer(ref, hyp)
-    return res
-
-
-def find_eval_dirs(path):
-    eval_dirs = []
-    for entry in os.listdir(path):
-        full_path = os.path.join(path, entry)
-        if os.path.isdir(full_path):
-            eval_dirs.append(full_path)
-
-    return eval_dirs
-
-
-def process_eval_dir(gt_file: str, eval_files: list):
-    res_dir = []
-    for f in eval_files:
-        res = evaluation_from_files(gt_file, f)
-        print(f"{f}: {res}")
-        res_dir.append((f, res))
-
-    return res_dir
-
-
-def process_eval_dirs():
-    eval_dirs = find_eval_dirs("eval")
-    results = []
-    for d in eval_dirs:
-        gt_file = ""
-        eval_files = []
-        for f in os.listdir(d):
-            if f.endswith(".txt"):
-                full_path = os.path.join(d, f)
-
-                if f.endswith("gt.txt"):
-                    gt_file = full_path
-
-                else:
-                    eval_files.append(full_path)
-
-        res_for_dir = process_eval_dir(gt_file, eval_files)
-        for r in res_for_dir:
-            results.append(r)
-
-    return results
-
-
 # needed for evaluate_dir
 def evaluate_from_ref(ref, f_path):
     with open(f_path, "r", encoding="utf-8") as f:
@@ -130,11 +76,11 @@ def create_results_folder():
 
 def create_results_csv_name(res_dir_path: str):
     date = datetime.now().strftime("%Y%m%d")
-    exsisting_files = [
+    existing_files = [
         filename for filename in os.listdir(res_dir_path) if filename.endswith(".csv")
     ]
 
-    next_index = len(exsisting_files)
+    next_index = len(existing_files)
 
     file_name = f"results_{date}_{next_index:02d}.csv"
     file_path = os.path.join(res_dir_path, file_name)
@@ -152,5 +98,4 @@ def results_to_csv(results, csv_path):
 
 
 if __name__ == "__main__":
-    results = process_eval_dirs()
-    results_to_csv(results, "pearson_scripting_results.csv")
+    pass
